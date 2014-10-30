@@ -1,12 +1,37 @@
+var documentWidth = window.screen.availWidth;
+var gridContainerWidth = documentWidth*0.92;
+var cellSideLength = 0.18*documentWidth;
+var cellSpace = 0.04*documentWidth;
+
+var startX = 0;
+var startY = 0;
+var endX = 0;
+var endY = 0;
+
 //二维数组：记录棋盘上的数据
 var dataArr = new Array();
 //分数
 var score = 0;
 
 $(document).ready(function(){
+	prepareForMobile();
     newgame();
 });
+function prepareForMobile(){
+	if(documentWidth > 500){
+		gridContainerWidth = 500;
+		cellSideLength = 100;
+		cellSpace = 20;
+	}
+	$("#panel").css('width',gridContainerWidth-2*cellSpace);
+	$("#panel").css('height',gridContainerWidth-2*cellSpace);
+	$("#panel").css('padding',cellSpace);
+	$("#panel").css('border-radius',0.02*gridContainerWidth);
 
+	$(".panel-cell").css('width',cellSideLength);
+	$(".panel-cell").css('height',cellSideLength);
+	$(".panel-cell").css('border-radius',0.02*cellSideLength);
+}
 function newgame(){
 	//初始化棋盘
 	init();
@@ -36,10 +61,10 @@ function init(){
 	updateView();
 }
 function getPosTop(x,y){
-	return 20+120*x;
+	return cellSpace+(cellSpace+cellSideLength)*x;
 }
 function getPosLeft(x,y){
-	return 20+120*y;
+	return cellSpace+(cellSpace+cellSideLength)*y;
 }
 function updateView(){
 	$(".number-cell").remove();
@@ -51,11 +76,11 @@ function updateView(){
 			if(dataArr[i][j]==0){
 				numberCell.css("width","0px");
 				numberCell.css("height","0px");
-				numberCell.css("top",getPosTop(i,j)+50);
-				numberCell.css("left",getPosLeft(i,j)+50);
+				numberCell.css("top",getPosTop(i,j)+cellSideLength/2);
+				numberCell.css("left",getPosLeft(i,j)+cellSideLength/2);
 			}else{
-				numberCell.css("width","100px");
-				numberCell.css("height","100px");
+				numberCell.css("width",cellSideLength);
+				numberCell.css("height",cellSideLength);
 				numberCell.css("top",getPosTop(i,j));
 				numberCell.css("left",getPosLeft(i,j));
 				numberCell.css('background-color',getNumberBackgroundColor( dataArr[i][j] ) );
@@ -64,6 +89,8 @@ function updateView(){
 			}
 		}
 	}
+	$(".number-cell").css('line-height',cellSideLength+"px")
+	$(".number-cell").css('font-size',0.6*cellSideLength+"px")
 }
 function getNumberBackgroundColor(number){
 	switch( number ){
@@ -151,8 +178,8 @@ function showNumberWithAnimation( i , j , number){
     numberCell.text(getNumberText(number));
 
     numberCell.animate({
-        width:"100px",
-        height:"100px",
+        width:cellSideLength,
+        height:cellSideLength,
         top:getPosTop( i , j ),
         left:getPosLeft( i , j )
     },50);
@@ -161,6 +188,7 @@ function showNumberWithAnimation( i , j , number){
 $(document).keydown(function(event){
 	switch(event.keyCode){
 		case 37: //left
+			event.preventDefault();
 			var flag = moveLeft();
             if(flag == 0){
             	gameOver();
@@ -169,6 +197,7 @@ $(document).keydown(function(event){
             }
             break;
         case 38: //up
+        	event.preventDefault();
             var flag = moveTop();
             if(flag == 0){
             	gameOver();
@@ -177,6 +206,7 @@ $(document).keydown(function(event){
             }
             break;
         case 39: //right
+        	event.preventDefault();
             var flag = moveRight();
             if(flag == 0){
             	gameOver();
@@ -185,6 +215,7 @@ $(document).keydown(function(event){
             }
             break;
         case 40: //down
+        	event.preventDefault();
             var flag = moveBottom();
             if(flag == 0){
             	gameOver();
@@ -194,6 +225,62 @@ $(document).keydown(function(event){
             break;
         default: //default
             break;
+	}
+});
+
+document.addEventListener('touchstart',function(event){
+	startX = event.touches[0].pageX;
+	startY = event.touches[0].pageY;
+});
+
+document.addEventListener('touchmove',function(event){
+	event.preventDefault();
+});
+
+document.addEventListener('touchend',function(event){
+	endX = event.changedTouches[0].pageX;
+	endY = event.changedTouches[0].pageY;
+	var deltax = endX - startX;
+	var deltay = endY - startY;
+	if(Math.abs(deltax) < 0.3*documentWidth && Math.abs(deltay) < 0.3*documentWidth){
+		return;
+	}
+	if(Math.abs(deltax) >= Math.abs(deltay)){
+		if(deltax > 0){
+			//move right
+			var flag = moveRight();
+            if(flag == 0){
+            	gameOver();
+            }else if(flag == 1){
+            	generateNumber();
+            }
+		}else{
+			//move left
+			var flag = moveLeft();
+            if(flag == 0){
+            	gameOver();
+            }else if(flag == 1){
+            	generateNumber();
+            }
+		}
+	}else{
+		if(deltay < 0){
+			//move top
+			var flag = moveTop();
+            if(flag == 0){
+            	gameOver();
+            }else if(flag == 1){
+            	generateNumber();
+            }
+		}else{
+			//move bottom
+			var flag = moveBottom();
+            if(flag == 0){
+            	gameOver();
+            }else if(flag == 1){
+            	generateNumber();
+            }
+		}
 	}
 });
 //可以移动返回1，格子都满了返回0，格子未满但无法移动（数字都在左边）返回2
