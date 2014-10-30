@@ -242,7 +242,7 @@ document.addEventListener('touchend',function(event){
 	endY = event.changedTouches[0].pageY;
 	var deltax = endX - startX;
 	var deltay = endY - startY;
-	if(Math.abs(deltax) < 0.3*documentWidth && Math.abs(deltay) < 0.3*documentWidth){
+	if(Math.abs(deltax) < 0.15*documentWidth && Math.abs(deltay) < 0.15*documentWidth){
 		return;
 	}
 	if(Math.abs(deltax) >= Math.abs(deltay)){
